@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Css/style.css">
+    <title>usuario</title>
+</head>
+<body>
+    <header>
+        <img class="banner" src="/img/manzanas.png" alt="#" width="70px">
+        <ul>
+            <a href="/index.html"><li>CERRAR SESIÓN <span class="glyphicon">&#xe163;</span></li></a>
+        </ul>
+    </header>
+    
+    <h1>Hola, sea bienvenido:<span id="nusuarios"></span></h1>
+ 
+    
+    <button id="s_disp">Servicios disponibles</button>
+    <button id="servicioSelec">Servicios Seleccionados</button>
+
+    <div id="contenedor_servicios" style="display: none;">
+        <table id="formularioSeleccionServicios">
+            <h2>Servicios del usuario</h2>
+            <table id="tabla_servicios">
+            <thead>
+                <tr>
+                    <th>Servicio</th>
+                    <th>Seleccionar</th>
+                </tr>
+            </thead>
+            <tbody id="lista_servicios"></tbody>
+        </table>
+            <input type="datetime-local" id="fechaHora" name="fechaHora" required>
+            <button type="submit" id="Guardar">Guardar</button>
+        </form>
+    </div> 
+
+
+    <div id="contenedor_selec" style="display: none;">
+        <table id="serviciosGuardadosFiltrados">
+            <h2>Servicios Guardados</h2>
+            <table id="tabla_guardados">
+                <thead>
+                    <tr>
+                        <td>Fecha</td>
+                        <td>Servicios</td>
+                    </tr>
+                </thead>
+                <tbody id="listaServiciosGuardados"></tbody>
+                </table>
+        </table>
+        <button type="reset" id="eliminar">Eliminar</button>
+
+        <button id="btnCerrarSesion">Cerrar Sesión</button>
+
+
+
+
+
+    <script>
+
+        // obtener USUARIO
+        document.addEventListener('DOMContentLoaded', ()=>{
+        const xhrUsuario=new XMLHttpRequest();
+        xhrUsuario.open('POST', 'obtener-usuario', true);
+        xhrUsuario.onreadystatechange=function(){
+            if(xhrUsuario.readyState==4){
+                if(xhrUsuario.status===200){
+                    console.log("Todo anda nice")
+                    const usuarios=JSON.parse(xhrUsuario.responseText);
+                    document.getElementById('nusuarios').textContent=usuarios.Nombre;
+                }
+                else{
+                    console.error('Error al obtener el usuario', error);
+                }
+            }
+        };
+        xhrUsuario.send()
+
+    });
+
+    //obtenerADMINISTRADOR
+
+    /*document.addEventListener('DOMContentLoaded', ()=>{
+        const xhrAdmin=new XMLHttpRequest();
+        xhrAdmin.open('POST', 'obtener-Administrador', true);
+        xhrAdmin.onreadystatechange=function(){
+            if(xhrAdmin.readyState==4){
+                console.log("Error en el admin")
+                if(xhrAdmin.status===200){
+                    console.log("Todo anda nice")
+                    const administrador=JSON.parse(xhrAdmin.responseText);
+                    document.getElementById('nusuarios').textContent=usuarios.Nombre.Rol==Administrador;
+                }
+                else{
+                    console.error('Error al obtener el admin', error);
+                }
+            }
+        };
+        xhrAdmin.send()
+
+    })*/
+
+        /*document.addEventListener('DOMContentLoaded', ()=>{
+            const params=new URLSearchParams(window.location.search);
+            const usuarios=params.get('usuarios');
+            document.getElementById('nusuarios').textContent=`${usuarios} :D!`;
+        */
+
+           
+          
+            const s_disp=document.getElementById('s_disp');
+            const contenedor_servicios=document.getElementById('contenedor_servicios');
+            const tabla_servicios=document.getElementById('tabla_servicios');
+            const lista_servicios=document.getElementById('lista_servicios');
+            
+
+            //Servicios disponibles
+          // Evento al hacer clic en el botón para desplegar servicios
+          s_disp.addEventListener('click', () => {
+          const xhrobtener = new XMLHttpRequest();
+          xhrobtener.open('POST', '/obtener-servicios-usuarios', true);
+          xhrobtener.setRequestHeader('Content-Type', 'application/json');
+          xhrobtener.onreadystatechange = function () {
+            if (xhrobtener.readyState === 4) {
+              if (xhrobtener.status === 200) {
+                const data = JSON.parse(xhrobtener.responseText);
+  
+                // Mostrar los servicios en la tabla
+                lista_servicios.innerHTML = ''; // Limpiar la tabla antes de llenarla
+                data.servicios.forEach(servicios => {
+                  const row = document.createElement('tr');
+                  row.innerHTML = `
+                    <td>${servicios}</td>
+                    <td><input type="checkbox" name="servicios" value="${servicios}"></td>
+                  `;
+                  lista_servicios.appendChild(row);
+                });
+                contenedor_servicios.style.display = 'block';
+  
+              } else {
+                console.error('Error al obtener servicios del usuario');
+              }
+            }
+          };
+          xhrobtener.send();
+        });
+
+                const formularioSeleccionServicios=document.getElementById('formularioSeleccionServicios');
+                formularioSeleccionServicios.addEventListener('submit', async (event)=>{
+                event.preventDefault();
+                //obtener los servicios del formulario
+                const mostrarServiciosSelec= Array.from(formularioSeleccionServicios.elements['servicios'])
+                .filter(checkbox=>checkbox.checked)
+                .map(checkbox=>checkbox.value);
+                //obtener fecha y hora
+                const fechaHora=formularioSeleccionServicios.elements['fechaHora'].value;
+                
+                //GUARDAR LOS SERVICIOS
+                const xhrguardado = new XMLHttpRequest();
+                xhrguardado.open('POST', '/guardar-servicios-usuarios', true);
+                xhrguardado.setRequestHeader('Content-Type', 'application/json');
+                xhrguardado.onreadystatechange=function(){
+                    if(xhrguardado.readyState===4){
+                        if(xhrguardado.status===201){
+                            window.location.reload();
+                            function alerta(){
+                                alert("Se ha guardado su solicitud")
+                            }
+                        }
+                        else{
+                            console.error('Error al Guardar :/',error);
+                        }
+                    }
+                };
+                xhrguardado.send(JSON.stringify({
+                    servicios: mostrarServiciosSelec,
+                    fechaHora:fechaHora})); 
+                });
+
+
+                  //Enviar los servicios seleccionados 
+
+                const servicioSelec=document.getElementById('servicioSelec');
+                const contenedor_Selec=document.getElementById('contenedor_Selec');
+                const serviciosGuardadosFiltrados=document.getElementById('serviciosGuardadosFiltrados');
+                const listaServiciosGuardados=document.getElementById('listaServiciosGuardados');
+                const tabla_guardados=document.getElementById('tabla_guardados');
+
+                  servicioSelec.addEventListener('click', ()=>{
+                 const xhrObtenerServiciosGuardados = new XMLHttpRequest();
+                xhrObtenerServiciosGuardados.open('POST','/obtener-servicios-guardados',true);
+                xhrObtenerServiciosGuardados.onreadystatechange=function(){
+                if(xhrObtenerServiciosGuardados.readyState==4){
+                    if(xhrObtenerServiciosGuardados.status===200){
+                        const data=JSON.parse(xhrObtenerServiciosGuardados.responseText);
+                        listaServiciosGuardados.innerHTML =
+                        data.serviciosGuardados.map(servicios=>
+                        `
+                        <tr>
+                            <td>${servicios.Nombre}</td>
+                            <td>${new Date (servicios.Fecha).toUTCString()}</td>
+                            <td><button class="delete" onclick="eliminarServicio(${servicios.id_S})">Eliminar</button></td>
+                        </tr>
+                        `).join('');
+
+
+                    contenedor_Selec.style.display='block';
+                    } else{
+                        console.error('Error al obtener servicios guardados')
+                    }
+                }
+            }
+            xhrObtenerServiciosGuardados.send();
+        });
+                
+
+            
+                //CERRAR SESSION 
+
+                const btnCerrarSesion=document.getElementById('btnCerrarSesion');
+                btnCerrarSesion.addEventListener('click',()=>{
+                    const xhrCerrarSesion=new XMLHttpRequest();
+                    xhrCerrarSesion.open('POST', '/cerrar-sesion', true);
+                    xhrCerrarSesion.onreadystatechange=function(){
+                        if(xhrCerrarSesion.readyState==4 && xhrCerrarSesion.status==200){
+                            window.location.href='/index.html';
+                        }
+                        else{
+                            console.error('Error al cerrar sesión');
+                        }
+                    }
+                    xhrCerrarSesion.send();
+                })
+                window.onload=function(){ //UNA FUNCION QUE NO ME PERMITE IR HACIA ATRAS 
+                    window.history.forward();
+                };
+                window.onpageshow=function(hola){ //UNA FUNCION QUE RECARGA LA PÁGINA
+                    if(hola.persisted){
+                        window.location.reload();
+                    }
+                }
+
+                //ELIMINAR SOLICITUDES
+                const eliminar = document.getElementById('eliminar');
+
+                function eliminarServicio(id_S){
+                    const xhrEliminarServicio=new XMLHttpRequest()
+                    xhrEliminarServicio.open('DELETE', '/eliminar-servicios/${id},')
+                    xhrEliminarServicio.setRequestHeader('Content-Type', 'application/json');
+                    xhrEliminarServicio.onreadystatechange=function(){
+                        if(xhrEliminarServicio.readyState==4 && xhrEliminarServicio.status==200){
+                            alert("Servicio Eliminado");
+                            window.location.reload();
+                        }
+                        else{
+                            console.error('Error al eliminar el servicio');
+                        }
+                    }
+                    xhrEliminarServicio.send();
+                }
+</script>
+
+<!--<script>
+        document.getElementById('nombreUsuario').innerText=getParameterByName('usuario');
+        function getParameterByName(name){
+            const url=new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+    </script> -->
+</body>
+</html>

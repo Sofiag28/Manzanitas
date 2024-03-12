@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="sp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Registro</title>
+    <link rel="stylesheet" href="./Css/style.css">
+    <link rel="website icon" type="icon" href="./img/icon3.png">
+
+</head>
+<body>
+    <header>
+        <img src="./img/logoM.png" alt="" srcset="">
+        <ul>
+            <a href="inicio.html"><li>INICIAR SESION</li></a>
+        </ul>
+    </header>
+    <form class="formulario" action="http://localhost:3000/crear" method="POST">
+       <h1>Registre sus datos</h1>
+       <label for="Nombre">Nombre</label>
+       <input type="text" id="Nombre" name="Nombre" required>
+
+       <label for="Tipo">Tipo de documento</label>
+            <select name="Tipo" id="TD">
+                <option value="TI">TI</option>
+                <option value="CC">CC</option>
+            </select>
+        <label for="Contraseña">Contraseña</label>
+        <input type="password" id="Contraseña" name="Contraseña" required>
+
+        <label for="id_M1">Localidad</label>
+            <select name="id_M1" id="id_M1">
+                <option value=1>Puente Aranda</option>
+                <option value=2>Engativa</option>
+                <option value=3>Ciudad Bolivar</option>
+                <option value=4>Usaquen</option>
+                <option value=5>Fontibon</option>
+                <option value=6>Antonio Nariño</option>
+            </select>
+
+        <label for="Documento">Documento</label>
+        <input type="text" id="Documento" name="Documento" required>
+        <button class="boton" type="submit">Enviar</button>
+        <a href="index.html"><button class="boton" type="button">Atras</button></a>
+      </form>
+</body>
+</html>

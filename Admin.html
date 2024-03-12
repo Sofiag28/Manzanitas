@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador</title>
+    <link rel="stylesheet" href="./Css/style.css">
+    <link rel="website icon" type="icon" href="./img/icon3.png">
+</head>
+<header>
+  <img class="banner" src="/img/manzanas.png" alt="#" width="70px">
+  <ul>
+      <a href="/index.html"><li>CERRAR SESIÓN <span class="glyphicon">&#xe163;</span></li></a>
+  </ul>
+</header>
+
+<h1>Hola, sea bienvenido:<span id="nusuarios"></span></h1>
+
+<div id="contenedorU" style="display: none;">
+<button id="m_usuarios">Mostrar Usuarios</button>
+    <button id="m_Manzanas">Mostrar Manzanas</button>
+    <button id="m_Servicios">Mostrar Servicios</button>
+
+      <table id="t_usuarios">
+          <thead>
+            <tr>
+              <td>idusuarios</td>
+              <td>Nombre</td>
+              <td>Tipo</td>
+              <td>Documento</td>
+              <td>Contraseña</td>
+              <td>id_M1</td>
+            </tr>
+          </thead>
+          <tbody id="lista_datos"></tbody>
+        </table>
+</div>
+
+<form id="Manzanas"> 
+  <div class="grup-form"> 
+    <label for="Nombre">Nombre</label>
+     <input type="text" id="Nombre" placeholder="Nombre"> 
+    </div> 
+    <div class="grup-form"> 
+      <label for="Dirección">Dirección</label> 
+      <input type="text" id="Dirección" placeholder="Dirección" > 
+    </div> 
+    <button type="button" onclick="ActualizarManzanas()">Actualizar</button> 
+</form> 
+</div> 
+
+<div id="ContainerServicios" style="display: none;"> 
+  <h2>Editar servicios</h2> 
+  <form id="Servicios"> 
+  <div class="group-form"> 
+  <label for="Nombre">Nombre</label> 
+  <input type="text" id="Nombre" placeholder="Nombre"> 
+</div> 
+  <div class="form-group"> 
+  <label for="Tipo">Tipo</label> 
+  <input type="text "id="Tipo" placeholder="Tipo"> 
+</div> 
+  <button type="button" onclick="ActualizarServicios()">Actualizar</button> 
+</form> 
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{
+        const xhrUsuario =new XMLHttpRequest();
+        xhrUsuario.open('POST', '/obtener-usuario',true);
+        xhrUsuario.onreadystatechange=function(){
+            if(xhrUsuario.readyState==4){
+                if(xhrUsuario.status==200){
+                  console.log("Todo anda nice")
+                    const usuarios= JSON.parse(xhrUsuario.responseText);
+                    document.getElementById('nusuarios').textContent=usuarios.Nombre;
+                }
+                else{
+                    console.error('Error al obtener el usuario',error);
+                }
+            }
+        };
+        xhrUsuario.send();
+
+        const t_usuarios = document.getElementById('t_usuarios');
+        const m_usuarios = document.getElementById('m_usuarios');
+        const lista_datos = document.getElementById('lista_datos')
+        const contenedorU=document.getElementById('contenedorU');
+        //obtener usuarios
+        m_usuarios.addEventListener('click',()=>{
+            if(t_usuarios.style.display === 'block'){
+                t_usuarios.style.display = 'none';}
+                else{
+            const xhrObtenerUsuario = new XMLHttpRequest();
+            xhrObtenerUsuario.open('POST', '/mostrar-usuarios', true);
+            xhrObtenerUsuario.setRequestHeader('Content-Type', 'application/json');
+            xhrObtenerUsuario.onreadystatechange=function(){
+                if(xhrObtenerUsuario.readyState===4){
+                    if(xhrObtenerUsuario.status===200){
+                        const data = JSON.parse(xhrObtenerUsuario.responseText)
+                        lista_datos.innerHTML = '';
+                        data.usuarios.map(usuarios => {
+                            const row=document.createElement('tr');
+                            row.innerHTML=
+                            `<td>${usuarios.idusuarios}</td>
+                            <td>${usuarios.Nombre}</td>
+                            <td>${usuarios.Tipo}</td>
+                            <td>${usuarios.Documento}</td>
+                            <td>${usuarios.Contraseña}</td>
+                            <td>${usuarios.id_M1 }</td>
+                            <td><button class="btn btn-info" onclick="editarUsuario(${usuario})">Editar</button></td>
+                            <td><button class="btn btn-danger" onclick="eliminarUsuario(${usuario.id_user})">Eliminar</button></td>
+                            
+                            `
+                            t_usuarios.appendChild(row);
+                        });
+                        contenedorU.style.display = "block";
+                    }
+                    else{
+                        console.error('error al obtener usuario')
+                    }
+                }
+            }
+            xhrObtenerUsuario.send();
+        }
+        })
+
+        const btnCerrarSesion=document.getElementById('btnCerrarSesion');
+                btnCerrarSesion.addEventListener('click',()=>{
+                    const xhrCerrarSesion=new XMLHttpRequest();
+                    xhrCerrarSesion.open('POST', '/cerrar-sesion', true);
+                    xhrCerrarSesion.onreadystatechange=function(){
+                        if(xhrCerrarSesion.readyState==4 && xhrCerrarSesion.status==200){
+                            window.location.href='/index.html';
+                        }
+                        else{
+                            console.error('Error al cerrar sesión');
+                        }
+                    }
+                    xhrCerrarSesion.send();
+                })
+                window.onload=function(){ //UNA FUNCION QUE NO ME PERMITE IR HACIA ATRAS 
+                    window.history.forward();
+                };
+                window.onpageshow=function(hola){ //UNA FUNCION QUE RECARGA LA PÁGINA
+                    if(hola.persisted){
+                        window.location.reload();
+                    }
+                }
+    window.onpageshow=function(evento){
+        if(evento.persisted){
+            window.location.reload();
+        }
+    }
+})
+
+//eliminar usuarios
+function eliminarUsuario(idusuarios){
+    const xhrEliminarUsuario = new XMLHttpRequest();
+    xhrEliminarUsuario.open('DELETE', 'eliminar-usuario${idusuarios}',true);
+    xhrEliminarUsuario.setRequestHeader('Content-Type', 'application/json');
+    xhrEliminarUsuario.onreadystatechange=function(){
+        if(xhrEliminarUsuario.readyState===4 && xhrEliminarUsuario.status===200){
+            function alerta(){ 
+              alert ("Se elimino con exito");
+            }
+            window.location.reload();
+        }
+        else{
+                console.error('error al eliminar el servicio');
+            }
+    }
+    xhrEliminarUsuario.send();
+  }
+  function eliminarManzanas(id_M){
+    const xhrEliminarUsuario = new XMLHttpRequest();
+    xhrEliminarUsuario.open('DELETE', 'eliminar-manzanas${id_M}',true);
+    xhrEliminarUsuario.setRequestHeader('Content-Type', 'application/json');
+    xhrEliminarUsuario.onreadystatechange=function(){
+        if(xhrEliminarUsuario.readyState===4 && xhrEliminarUsuario.status===200){
+            function alerta(){ 
+              alert ("Se elimino con exito");
+            }
+            window.location.reload();
+        }
+        else{
+                console.error('error al eliminar el servicio');
+            }
+    }
+    xhrEliminarUsuario.send();
+  }
+
+  function eliminarServicios(id_S){
+    const xhrEliminarUsuario = new XMLHttpRequest();
+    xhrEliminarUsuario.open('DELETE', 'eliminar-servicios${id_S}',true);
+    xhrEliminarUsuario.setRequestHeader('Content-Type', 'application/json');
+    xhrEliminarUsuario.onreadystatechange=function(){
+        if(xhrEliminarUsuario.readyState===4 && xhrEliminarUsuario.status===200){
+            function alerta(){ 
+              alert ("Se elimino con exito");
+            }
+            window.location.reload();
+        }
+        else{
+                console.error('error al eliminar el servicio');
+            }
+    }
+    xhrEliminarUsuario.send();
+  }
+
+  //ACTUALIZAR
+  function ActualizarManzanas(){
+    const Nombre = document.getElementById('Nombre').value;
+    const Direccion = document.getElementById('Direccion').value; 
+    const xhrActualizarManzanas = new XMLHttpRequest();
+    xhrActualizarManzanas.open('POST', 'actualizar-manzanas${id_M}', true); 
+    xhrActualizarManzanas.setRequestHeader('Content-Type', 'application/json'); 
+    xhrActualizarManzanas.onload = function () 
+    { if 
+      (xhrActualizarManzanas.status === 200) 
+      function alerta(){
+        alert('Manzana actualizada exitosamente'); 
+      } else 
+      function alerta(){
+        ('Error al actualizar la manzana'); 
+      } 
+    }; 
+    xhrActualizarManzanas.send(JSON.stringify({ Nombre, Direccion })); 
+  }
+  //SERVICIOS
+
+  function ActualizarServicios() { 
+  const Nombre = document.getElementById('Nombre').value; 
+  const Tipo = document.getElementById('Tipo').value;
+  const xhrActualizarServicios = new XMLHttpRequest(); 
+  xhrActualizarServicios.open('POST', 'actualizar-servicios${id_S}', true); 
+  xhrActualizarServicios.setRequestHeader('Content-Type', 'application/json');
+  xhrActualizarServicios.onload = function () { 
+  if (xhrActualizarServicios.status === 200) {
+    function alerta(){
+    ('Servicio actualizado exitosamente'); 
+    }
+  }else
+    function alerta(){
+      alert('Error al actualizar el servicio'); 
+    } 
+  }; 
+  xhrActualizarServicios.send(JSON.stringify({Nombre, Tipo }));
+ };
+
+
+  
+  //mostrar manzanas
+  const m_Servicios=document.getElementById('m_Servicios');
+  const lista_datos=document.getElementById('lista_datos');
+  const t_usuarios=document.getElementById('t_usuarios');
+
+  const m_Manzanas=document.getElementById('m_Manzanas')
+  m_Manzanas.addEventListener('click', ()=>{
+  const xhrObtenerManzanas = new XMLHttpRequest();
+  xhrObtenerManzanas.open('POST', 'mostrar-manzanas', true);
+  xhrObtenerManzanas.setRequestHeader('Content-Type', 'application/json');
+  xhrObtenerManzanas.onreadystatechange = function() {
+    if (xhrObtenerManzanas.readyState === 4) {
+      if (xhrObtenerManzanas.status === 200) {
+        const data = JSON.parse(xhrObtenerManzanas.responseText);
+        lista_datos.innerHTML = '';
+                data.Manzanas.forEach(Manzanas => {
+                  const row = document.createElement('tr');
+                  row.innerHTML = `
+                    <td>${Manzanas}</td>
+                    <td><input type="checkbox" name="Manzanas" value="${Manzanas}"></td>
+                  `;
+                  t_usuarios.appendChild(row);
+                });
+                t_usuarios.style.display = 'block';
+  
+              } else {
+                console.error('Error al comprobar las manzanas');
+              }
+            }
+          };
+          xhrObtenerManzanas.send();
+        });
+
+  m_Servicios.addEventListener('click', () => {
+    const xhrobtener = new XMLHttpRequest();
+          xhrobtener.open('POST', 'mostrar-servicios-usuarios', true);
+          xhrobtener.setRequestHeader('Content-Type', 'application/json');
+          xhrobtener.onreadystatechange = function () {
+            if (xhrobtener.readyState === 4) {
+              if (xhrobtener.status === 200) {
+                const data = JSON.parse(xhrobtener.responseText);
+  
+                // Mostrar los servicios en la tabla
+                lista_datos.innerHTML = ''; 
+                data.servicios.forEach(servicios => {
+                  const row = document.createElement('tr');
+                  row.innerHTML = `
+                    <td>${servicios}</td>
+                    <td><input type="checkbox" name="servicios" value="${servicios}"></td>
+                  `;
+                  t_usuarios.appendChild(row);
+                });
+                t_usuarios.style.display = 'block';
+  
+              } else {
+                console.error('Error al comprobar los servicios');
+              }
+            }
+          };
+          xhrobtener.send();
+        });
+     </script>
+
+</body>
+</html>
